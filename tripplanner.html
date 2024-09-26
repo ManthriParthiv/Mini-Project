@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Planner</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-image: url('6345959.jpg'); /* Replace with your image URL */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        .top-right-login {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .top-right-login img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+        .top-right-login button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            position: relative; /* Ensure positioning context for suggestions */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Autocomplete container */
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 145px; /* Position just below the input field */
+            left: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 0px solid #ccc;
+            border-radius: 4px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 5px; /* Space between input field and suggestions */
+            box-sizing: border-box;
+        }
+
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .autocomplete-suggestion:hover {
+            background-color: #f0f0f0;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .buttons button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .login-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .signup-btn {
+            background-color: #008CBA;
+            color: white;
+        }
+
+        /* Chatbot Modal */
+        .chatbot-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1001;
+            width: 300px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chatbot-modal-content {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .close-button {
+            align-self: flex-end;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chatbot-input {
+            border: none;
+            padding: 10px;
+            width: calc(100% - 80px);
+            box-sizing: border-box;
+        }
+
+        .chatbot-send {
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .chatbot-send:hover {
+            background-color: #45a049;
+        }
+
+        .chatbot-message {
+            margin-bottom: 10px;
+        }
+
+        .chatbot-message.user {
+            text-align: right;
+        }
+
+        .chatbot-message.bot {
+            text-align: left;
+        }
+
+        /* Chatbot image */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chatbot-container img {
+            width: 200px; /* Adjust the size as needed */
+            height: 200px; /* Adjust the size as needed */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-right-login">
+        <img src="https://via.placeholder.com/40" alt="User Icon"> <!-- Replace with your image URL -->
+        <button class="login-btn">Log In</button>
+    </div>
+    
+    <div class="container">
+        <h1>Welcome to Trip Planner</h1>
+        
+        <input type="text" id="location" name="location" placeholder="Enter your location">
+        
+        <div id="suggestions" class="autocomplete-suggestions"></div> <!-- Container for suggestions -->
+
+        <div class="buttons">
+            <button class="signup-btn">Trip Details</button>
+        </div>
+    </div>
+
+    <!-- Chatbot image -->
+    <div class="chatbot-container">
+        <img src="bot.png" alt="Chatbot" id="chatbot-icon"> <!-- Replace with your chatbot image URL -->
+    </div>
+    
+    <!-- Chatbot Modal -->
+    <div id="chatbot-modal" class="chatbot-modal">
+        <div class="chatbot-modal-content">
+            <span class="close-button" id="close-button">&times;</span>
+            <div id="chatbot-messages" class="chatbot-messages"></div>
+            <input type="text" id="user-input" placeholder="Type a message..." class="chatbot-input">
+            <button id="send-message" class="chatbot-send">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatbotIcon = document.getElementById('chatbot-icon');
+            const chatbotModal = document.getElementById('chatbot-modal');
+            const closeButton = document.getElementById('close-button');
+            const sendMessageButton = document.getElementById('send-message');
+            const userInput = document.getElementById('user-input');
+            const chatbotMessages = document.getElementById('chatbot-messages');
+    
+            chatbotIcon.addEventListener('click', () => {
+                chatbotModal.style.display = 'block';
+            });
+    
+            closeButton.addEventListener('click', () => {
+                chatbotModal.style.display = 'none';
+            });
+    
+            sendMessageButton.addEventListener('click', sendMessage);
+    
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+    
+            function sendMessage() {
+                const messageText = userInput.value.trim();
+                if (messageText === '') return;
+    
+                addMessage('user', messageText);
+                userInput.value = '';
+    
+                const response = getBotResponse(messageText);
+                setTimeout(() => {
+                    addMessage('bot', response);
+                }, 1000);
+            }
+    
+            function getBotResponse(userMessage) {
+                // Define some example responses based on user messages
+                const responses = {
+                    'What are the tour options?': 'We offer several tours including city tours, nature hikes, and historical explorations. Which one interests you?',
+                    'Tell me about city tours.': 'Our city tours cover major landmarks and attractions. They usually last 3-4 hours and include a guide.',
+                    'What should I bring for a nature hike?': 'For a nature hike, please bring comfortable walking shoes, water, sunscreen, and a hat. We also recommend a light jacket.',
+                    'Do you offer historical tours?': 'Yes, we have historical tours that cover important landmarks and provide detailed historical context.',
+                    'How can I book a tour?': 'You can book a tour through our website or by contacting our support team via email or phone.',
+                    'What are the prices for the tours?': 'Prices vary depending on the tour. You can find detailed pricing information on our website.',
+                    'What is the duration of the tours?': 'Tour durations vary from 2 hours to a full day, depending on the type of tour you choose.'
+                };
+    
+                // Normalize user input for matching
+                const normalizedMessage = userMessage.toLowerCase();
+    
+                // Find the best matching response
+                for (const key in responses) {
+                    if (normalizedMessage.includes(key.toLowerCase())) {
+                        return responses[key];
+                    }
+                }
+    
+                return 'I am not sure how to respond to that. Could you please rephrase your question?';
+            }
+    
+            function addMessage(sender, text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chatbot-message ${sender}`;
+                messageDiv.textContent = text;
+                chatbotMessages.appendChild(messageDiv);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }
+        });
+    </script>
+    
+</body>
+</html>
